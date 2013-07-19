@@ -6,6 +6,7 @@ class Select(object):
         self.reset()
 
     def __repr__(self):
+        """Build out the actual SQL query when this object is represented"""
         return 'SELECT' \
             + self.compile_columns(self.parts['columns']) \
             + self.compile_from(self.parts['from']) \
@@ -13,6 +14,9 @@ class Select(object):
             + self.compile_where(self.parts['where']) \
             + self.compile_order(self.parts['order']) \
             + self.compile_limit(self.parts['limit'])
+
+    def __str__(self):
+        return self.__repr__()
 
     def compile_columns(self, columns):
         """Compiles a list of columns"""
@@ -51,7 +55,7 @@ class Select(object):
     def compile_where(self, where = None):
         """Compiles the WHERE statement of the query
 
-        Arguments:
+        Keyword Arguments:
         where - An iterable containing [condition, value] elements
         """
         if not len(where or []):
@@ -75,13 +79,19 @@ class Select(object):
     def format_columns(self, table_name, table_columns):
         """Associate the table name to each column passed in
 
-        Arguments:
+        Keyword Arguments:
         table_name - String with the name of the column's parent table
         table_columns - An iterable of column names
         """
         return ['%s.%s' % (table_name, x, ) for x in table_columns]
 
     def from_(self, table_name, table_columns = None):
+        """Build the FROM parts
+
+        Keyword Arguments:
+        table_name - String with the name of the column's parent table
+        table_columns - An iterable of column names
+        """
         table_columns = table_columns or ['*']
 
         self.parts['from'] = table_name
@@ -90,6 +100,17 @@ class Select(object):
         return self
 
     def join(self, join_table, join_condition, join_columns, join_type):
+        """Build the JOIN parts
+
+        Default to whatever the first join type is in the event that
+        the specified join type does not exist.
+
+        Keyword Arguments:
+        join_table - String with the name of the table being joined
+        join_condition - String containing the operational condition of this join
+        join_columns - An iterable of column names
+        join_type - A string containing one of Select.JOIN_TYPES
+        """
         if join_type not in self.JOIN_TYPES:
             join_type = self.JOIN_TYPES[0]
 
@@ -99,20 +120,34 @@ class Select(object):
         return self
 
     def inner_join(self, join_table, join_condition, join_columns):
+        """Proxy to join with INNER as the join_type"""
         return self.join(join_table, join_condition, join_columns, 'INNER')
 
     def right_join(self, join_table, join_condition, join_columns):
+        """Proxy to join with RIGHT as the join_type"""
         return self.join(join_table, join_condition, join_columns, 'RIGHT')
 
     def left_join(self, join_table, join_condition, join_columns):
+        """Proxy to join with LEFT as the join_type"""
         return self.join(join_table, join_condition, join_columns, 'LEFT')
 
-    def limit(self, from_, to_ = None):
-        self.parts['limit'] = [from_, to_]
+    def limit(self, from_, to = None):
+        """Build the LIMIT parts
+
+        Keyword Arguments:
+        from_ - An integer containing the starting point or the total records
+        to - An integer that states the total records starting at from_
+        """
+        self.parts['limit'] = [from_, to]
 
         return self
 
     def order_by(self, order):
+        """Build the ORDER parts
+
+        Keyword Arguments:
+        order - An iterable of ORDER BY conditions that will be compiled in order
+        """
         if not hasattr(order, '__iter__'):
             order = [order]
 
@@ -121,6 +156,7 @@ class Select(object):
         return self
 
     def reset(self):
+        """Reset all of the parts back to their original values"""
         self.parts = {
             'from'      : '',
             'columns'   : [],
@@ -131,6 +167,15 @@ class Select(object):
         }
 
     def where(self, condition, value = None):
+        """Build a WHERE part
+
+        This method is able to chain with multiple calls to build up various conditionals
+
+        Keyword Arguments:
+        condition - A string containing the WHERE condition
+        value - A value to be populated via string substitution
+        """
+
         self.parts['where'].append([condition, value])
 
         return self
