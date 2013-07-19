@@ -4,10 +4,9 @@ EasySQL
 This library's purpose is to remove the need to manually build a SQL query as a string with multiple conditions of potential WHERE, ORDER, LIMIT, or any other kind of statement.
 
 ```python
-from easysql import Select
-import random
+import easysql, random
 
-select = Select().from_('my_table', ['*']).limit(20)
+select = easysql.Select().from_('my_table', ['*']).limit(20)
 
 this_is_awesome = random.randint(0, 10) > 5
 
