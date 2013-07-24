@@ -12,6 +12,8 @@ this_is_awesome = random.randint(0, 10) > 5
 
 if this_is_awesome:
     select = select.where('my_column = %s', 'awesome')
+else:
+    select = select.order_by('my_column ASC')
 
 print select
 ```
@@ -25,5 +27,5 @@ SELECT my_table.* FROM my_table WHERE my_column = "awesome" LIMIT 20
 and that the other 50% of the time we will certainly see
 
 ```sql
-SELECT my_table.* FROM my_table LIMIT 20
+SELECT my_table.* FROM my_table ORDER BY my_column ASC LIMIT 20
 ```
