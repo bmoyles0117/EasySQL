@@ -66,7 +66,7 @@ class Select(object):
         for condition, value in where:
             if value is None:
                 value = Select.NULL_VALUE
-            elif isinstance(value, str):
+            elif isinstance(value, (str, unicode, )):
                 value = '"' + value.replace('"', '\\"') + '"'
 
             try:

@@ -55,6 +55,17 @@ class WhereTestCase(SelectTestCase):
 
         self.assertEquals(str(self.select), 'SELECT table_name.* FROM table_name WHERE test = "123"')
 
+    def test_where_like(self):
+        self.select.where('test LIKE %s', '123%')
+
+        self.assertEquals(str(self.select), 'SELECT table_name.* FROM table_name WHERE test LIKE "123%"')
+
+    def test_where_unicode(self):
+        self.select.where('test = %s', u'123')
+
+        self.assertEquals(str(self.select), 'SELECT table_name.* FROM table_name WHERE test = "123"')
+
+
 class LimitTestCase(SelectTestCase):
     def test_single_limit(self):
         self.select.limit(10)
