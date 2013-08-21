@@ -13,7 +13,7 @@ def generate_data_files(*dirs):
 
 setup(
     name='Easy SQL',
-    version='0.005',
+    version='0.006',
     description='An object oriented way of building SQL queries using python',
     author='Bryan Moyles',
     author_email='bryan.moyles@teltechcorp.com',

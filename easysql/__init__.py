@@ -56,7 +56,7 @@ class Select(object):
         table_name = self.format_table_name(table_name)
         
         if table_name[0] != table_name[1]:
-            return table_name[0] + ' AS ' + table_name[1]
+            return table_name[1] + ' AS ' + table_name[0]
         else:
             return table_name[0]
 
