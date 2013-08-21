@@ -22,16 +22,16 @@ class Select(object):
         """Compiles a list of columns"""
         return ' ' + ', '.join(columns)
 
-    def compile_from(self, from_):
+    def compile_from(self, from_):    
         """Compiles the FROM statement of the query"""
-        return ' FROM ' + from_
+        return ' FROM ' + self.compile_table_name(from_)
 
     def compile_joins(self, joins):
         """Compiles any joins that exist in the query"""
         query = ''
 
         for join_table, join_type, join_condition in joins:
-            query += ' ' + join_type + ' JOIN ' + join_table + ' ON ' + join_condition
+            query += ' ' + join_type + ' JOIN ' + self.compile_table_name(join_table) + ' ON ' + join_condition
 
         return query
 
@@ -51,6 +51,14 @@ class Select(object):
             return ''
 
         return ' ORDER BY ' + ', '.join(order)
+    
+    def compile_table_name(self, table_name):    
+        table_name = self.format_table_name(table_name)
+        
+        if table_name[0] != table_name[1]:
+            return table_name[0] + ' AS ' + table_name[1]
+        else:
+            return table_name[0]
 
     def compile_where(self, where = None):
         """Compiles the WHERE statement of the query
@@ -76,26 +84,42 @@ class Select(object):
 
         return ' WHERE ' + ' AND '.join(where_parts)
 
-    def format_columns(self, table_name, table_columns):
+    def format_columns(self, table_alias, table_columns):
         """Associate the table name to each column passed in
 
         Keyword Arguments:
-        table_name - String with the name of the column's parent table
+        table_alias - String with the name of the column's parent table alias
         table_columns - An iterable of column names
         """
-        return ['%s.%s' % (table_name, x, ) for x in table_columns]
+        return ['%s.%s' % (table_alias, x, ) for x in table_columns]
+    
+    def format_table_name(self, table_name):
+        """Transform string table names into an (alias, name) tuple
+        
+        Keyword Arguments:
+        table_name - String or tuple with the name of the table
+        """
+        if not isinstance(table_name, (tuple, list, )):
+            table_name = (table_name, table_name, )
+        
+        if len(table_name) != 2:
+            raise ValueError('Tuples or lists passed as table names MUST be limited to two items')
+        
+        return table_name
 
     def from_(self, table_name, table_columns = None):
         """Build the FROM parts
 
         Keyword Arguments:
-        table_name - String with the name of the column's parent table
+        table_name - String or tuple with the name of the column's parent table
         table_columns - An iterable of column names
         """
         table_columns = table_columns or ['*']
+        
+        table_name = self.format_table_name(table_name)
 
         self.parts['from'] = table_name
-        self.parts['columns'].extend(self.format_columns(table_name, table_columns))
+        self.parts['columns'].extend(self.format_columns(table_name[0], table_columns))
 
         return self
 
@@ -106,16 +130,18 @@ class Select(object):
         the specified join type does not exist.
 
         Keyword Arguments:
-        join_table - String with the name of the table being joined
+        join_table - String or tuple with the name of the table being joined
         join_condition - String containing the operational condition of this join
         join_columns - An iterable of column names
         join_type - A string containing one of Select.JOIN_TYPES
         """
         if join_type not in self.JOIN_TYPES:
             join_type = self.JOIN_TYPES[0]
+        
+        join_table = self.format_table_name(join_table)
 
         self.parts['joins'].append([join_table, join_type, join_condition])
-        self.parts['columns'].extend(self.format_columns(join_table, join_columns))
+        self.parts['columns'].extend(self.format_columns(join_table[0], join_columns))
 
         return self
 
