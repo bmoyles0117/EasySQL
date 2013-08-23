@@ -12,6 +12,7 @@ class Select(object):
             + self.compile_from(self.parts['from']) \
             + self.compile_joins(self.parts['joins']) \
             + self.compile_where(self.parts['where']) \
+            + self.compile_group_by(self.parts['group_by']) \
             + self.compile_order(self.parts['order']) \
             + self.compile_limit(self.parts['limit'])
 
@@ -25,6 +26,13 @@ class Select(object):
     def compile_from(self, from_):    
         """Compiles the FROM statement of the query"""
         return ' FROM ' + self.compile_table_name(from_)
+
+    def compile_group_by(self, group_by = None):
+        """Compiles the GROUP BY statement of the query"""
+        if not len(group_by or []):
+            return ''
+
+        return ' GROUP BY ' + ', '.join(group_by)
 
     def compile_joins(self, joins):
         """Compiles any joins that exist in the query"""
@@ -124,6 +132,19 @@ class Select(object):
 
         return self
 
+    def group_by(self, group_by):
+        """Build the GROUP BY parts
+
+        Keyword Arguments:
+        grouping - An iterable of GROUP BY conditions that will be compiled in order
+        """
+        if not hasattr(group_by, '__iter__'):
+            group_by = [group_by]
+
+        self.parts['group_by'] = group_by
+
+        return self
+
     def join(self, join_table, join_condition, join_columns, join_type):
         """Build the JOIN parts
 
@@ -189,6 +210,7 @@ class Select(object):
             'columns'   : [],
             'joins'     : [],
             'limit'     : [],
+            'group_by'  : [],
             'order'     : [],
             'where'     : []
         }

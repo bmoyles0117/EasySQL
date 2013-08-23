@@ -107,6 +107,22 @@ class JoinTestCase(SelectTestCase):
         self.select.join('joined_table', 'joined_table.id = table_name.id', [], 'UNKNOWN')
 
         self.assertEquals(str(self.select), self.base_matching_query % 'INNER')
+        
+class GroupByTestCase(SelectTestCase):
+    def test_order_by_string(self):
+        self.select.group_by('field_name')
+
+        self.assertEquals(str(self.select), 'SELECT table_name.* FROM table_name GROUP BY field_name')
+
+    def test_order_by_single_item(self):
+        self.select.group_by(['field_name'])
+
+        self.assertEquals(str(self.select), 'SELECT table_name.* FROM table_name GROUP BY field_name')
+
+    def test_order_by_multi_item(self):
+        self.select.group_by(['field_name', 'other_field'])
+
+        self.assertEquals(str(self.select), 'SELECT table_name.* FROM table_name GROUP BY field_name, other_field')
 
 class OrderByTestCase(SelectTestCase):
     def test_order_by_string(self):
