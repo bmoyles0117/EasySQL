@@ -114,7 +114,8 @@ class Select(object):
         table_name - String or tuple with the name of the column's parent table
         table_columns - An iterable of column names
         """
-        table_columns = table_columns or ['*']
+        if table_columns is None:
+            table_columns = ['*']
         
         table_name = self.format_table_name(table_name)
 
